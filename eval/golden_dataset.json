@@ -1,0 +1,542 @@
+[
+  {
+    "id": "Q001",
+    "category": "simple_lookup",
+    "difficulty": "easy",
+    "question": "How many active suppliers do we have?",
+    "verified_sql": "SELECT COUNT(*) AS active_supplier_count FROM suppliers WHERE is_active = TRUE",
+    "expected_result_shape": {"type": "single_value", "column": "active_supplier_count"},
+    "notes": "Straightforward count with single filter"
+  },
+  {
+    "id": "Q002",
+    "category": "simple_lookup",
+    "difficulty": "easy",
+    "question": "List all warehouses in India.",
+    "verified_sql": "SELECT warehouse_name, city FROM warehouses WHERE country = 'India'",
+    "expected_result_shape": {"type": "multi_row", "columns": ["warehouse_name", "city"]},
+    "notes": "Single table filter on country"
+  },
+  {
+    "id": "Q003",
+    "category": "simple_lookup",
+    "difficulty": "easy",
+    "question": "Which products are discontinued?",
+    "verified_sql": "SELECT product_id, sku, product_name FROM products WHERE is_discontinued = TRUE",
+    "expected_result_shape": {"type": "multi_row", "columns": ["product_id", "sku", "product_name"]},
+    "notes": "Boolean filter on products"
+  },
+  {
+    "id": "Q004",
+    "category": "simple_lookup",
+    "difficulty": "easy",
+    "question": "How many purchase orders have been cancelled?",
+    "verified_sql": "SELECT COUNT(*) AS cancelled_count FROM purchase_orders WHERE status = 'cancelled'",
+    "expected_result_shape": {"type": "single_value", "column": "cancelled_count"},
+    "notes": "Count with status filter"
+  },
+  {
+    "id": "Q005",
+    "category": "simple_lookup",
+    "difficulty": "easy",
+    "question": "Show me all suppliers from Germany.",
+    "verified_sql": "SELECT supplier_id, supplier_name, rating, is_active FROM suppliers WHERE country = 'Germany'",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_id", "supplier_name"]},
+    "notes": "Country filter on suppliers"
+  },
+  {
+    "id": "Q006",
+    "category": "simple_lookup",
+    "difficulty": "easy",
+    "question": "List all product categories we carry.",
+    "verified_sql": "SELECT DISTINCT category FROM products WHERE category IS NOT NULL ORDER BY category",
+    "expected_result_shape": {"type": "multi_row", "columns": ["category"]},
+    "notes": "DISTINCT on category column"
+  },
+  {
+    "id": "Q007",
+    "category": "simple_lookup",
+    "difficulty": "easy",
+    "question": "How many products are below their reorder level in terms of inventory?",
+    "verified_sql": "SELECT COUNT(DISTINCT i.product_id) AS below_reorder FROM inventory i JOIN products p ON i.product_id = p.product_id WHERE i.quantity_on_hand < p.reorder_level",
+    "expected_result_shape": {"type": "single_value", "column": "below_reorder"},
+    "notes": "Requires inventory + products join"
+  },
+  {
+    "id": "Q008",
+    "category": "simple_lookup",
+    "difficulty": "easy",
+    "question": "What is the total number of shipments recorded?",
+    "verified_sql": "SELECT COUNT(*) AS total_shipments FROM shipments",
+    "expected_result_shape": {"type": "single_value", "column": "total_shipments"},
+    "notes": "Simple count on shipments"
+  },
+  {
+    "id": "Q009",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "question": "What is the average supplier rating?",
+    "verified_sql": "SELECT ROUND(AVG(rating), 2) AS avg_rating FROM suppliers WHERE is_active = TRUE",
+    "expected_result_shape": {"type": "single_value", "column": "avg_rating"},
+    "notes": "AVG aggregation on rating for active suppliers"
+  },
+  {
+    "id": "Q010",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "question": "What is the total quantity ordered across all purchase orders?",
+    "verified_sql": "SELECT SUM(quantity_ordered) AS total_quantity FROM purchase_orders",
+    "expected_result_shape": {"type": "single_value", "column": "total_quantity"},
+    "notes": "SUM aggregation"
+  },
+  {
+    "id": "Q011",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "question": "What is the total value of all delivered purchase orders?",
+    "verified_sql": "SELECT ROUND(SUM(quantity_ordered * unit_price), 2) AS total_delivered_value FROM purchase_orders WHERE status = 'delivered'",
+    "expected_result_shape": {"type": "single_value", "column": "total_delivered_value"},
+    "notes": "Multiplication in aggregation"
+  },
+  {
+    "id": "Q012",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "question": "What is the average unit cost of products in the Electronics category?",
+    "verified_sql": "SELECT ROUND(AVG(unit_cost), 2) AS avg_cost FROM products WHERE category = 'Electronics' AND is_discontinued = FALSE",
+    "expected_result_shape": {"type": "single_value", "column": "avg_cost"},
+    "notes": "AVG with category and active filter"
+  },
+  {
+    "id": "Q013",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "question": "What is the minimum and maximum warehouse capacity?",
+    "verified_sql": "SELECT MIN(capacity_units) AS min_capacity, MAX(capacity_units) AS max_capacity FROM warehouses",
+    "expected_result_shape": {"type": "single_value", "columns": ["min_capacity", "max_capacity"]},
+    "notes": "MIN and MAX together"
+  },
+  {
+    "id": "Q014",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "question": "How many purchase orders were placed in 2024?",
+    "verified_sql": "SELECT COUNT(*) AS orders_2024 FROM purchase_orders WHERE EXTRACT(YEAR FROM order_date) = 2024",
+    "expected_result_shape": {"type": "single_value", "column": "orders_2024"},
+    "notes": "Year extraction from date"
+  },
+  {
+    "id": "Q015",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "question": "What is the total inventory quantity across all warehouses?",
+    "verified_sql": "SELECT SUM(quantity_on_hand) AS total_inventory FROM inventory",
+    "expected_result_shape": {"type": "single_value", "column": "total_inventory"},
+    "notes": "SUM across all inventory"
+  },
+  {
+    "id": "Q016",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "question": "What percentage of purchase orders are in 'delivered' status?",
+    "verified_sql": "SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE status = 'delivered') / COUNT(*), 2) AS pct_delivered FROM purchase_orders",
+    "expected_result_shape": {"type": "single_value", "column": "pct_delivered"},
+    "notes": "FILTER aggregate — PostgreSQL-specific"
+  },
+  {
+    "id": "Q017",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "Which supplier has placed the most purchase orders?",
+    "verified_sql": "SELECT s.supplier_name, COUNT(po.po_id) AS order_count FROM suppliers s JOIN purchase_orders po ON s.supplier_id = po.supplier_id GROUP BY s.supplier_id, s.supplier_name ORDER BY order_count DESC LIMIT 1",
+    "expected_result_shape": {"type": "single_row", "columns": ["supplier_name", "order_count"]},
+    "notes": "JOIN + GROUP BY + ORDER BY + LIMIT 1"
+  },
+  {
+    "id": "Q018",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "Show me all purchase orders that were shipped by DHL.",
+    "verified_sql": "SELECT po.po_id, po.order_date, po.status, sh.carrier FROM purchase_orders po JOIN shipments sh ON po.po_id = sh.po_id WHERE sh.carrier = 'DHL'",
+    "expected_result_shape": {"type": "multi_row", "columns": ["po_id", "carrier"]},
+    "notes": "JOIN on purchase_orders and shipments with carrier filter"
+  },
+  {
+    "id": "Q019",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "What products are currently stocked in the Mumbai Distribution Center?",
+    "verified_sql": "SELECT p.sku, p.product_name, i.quantity_on_hand FROM products p JOIN inventory i ON p.product_id = i.product_id JOIN warehouses w ON i.warehouse_id = w.warehouse_id WHERE w.warehouse_name = 'Mumbai Distribution Center'",
+    "expected_result_shape": {"type": "multi_row", "columns": ["sku", "product_name", "quantity_on_hand"]},
+    "notes": "Three-table join"
+  },
+  {
+    "id": "Q020",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "List all purchase orders from suppliers based in China.",
+    "verified_sql": "SELECT po.po_id, po.order_date, po.status, s.supplier_name FROM purchase_orders po JOIN suppliers s ON po.supplier_id = s.supplier_id WHERE s.country = 'China'",
+    "expected_result_shape": {"type": "multi_row", "columns": ["po_id", "supplier_name"]},
+    "notes": "Two-table join with country filter"
+  },
+  {
+    "id": "Q021",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "Which products in the Mechanical Parts category have never been ordered?",
+    "verified_sql": "SELECT p.product_id, p.sku, p.product_name FROM products p WHERE p.category = 'Mechanical Parts' AND p.product_id NOT IN (SELECT DISTINCT product_id FROM purchase_orders)",
+    "expected_result_shape": {"type": "multi_row", "columns": ["product_id", "sku"]},
+    "notes": "NOT IN subquery"
+  },
+  {
+    "id": "Q022",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "Show suppliers and the total value of their delivered orders.",
+    "verified_sql": "SELECT s.supplier_name, ROUND(SUM(po.quantity_ordered * po.unit_price), 2) AS total_delivered_value FROM suppliers s JOIN purchase_orders po ON s.supplier_id = po.supplier_id WHERE po.status = 'delivered' GROUP BY s.supplier_id, s.supplier_name ORDER BY total_delivered_value DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name", "total_delivered_value"]},
+    "notes": "JOIN + aggregation + ordering"
+  },
+  {
+    "id": "Q023",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "How many distinct products does each warehouse hold in inventory?",
+    "verified_sql": "SELECT w.warehouse_name, COUNT(DISTINCT i.product_id) AS distinct_products FROM warehouses w JOIN inventory i ON w.warehouse_id = i.warehouse_id WHERE i.quantity_on_hand > 0 GROUP BY w.warehouse_id, w.warehouse_name ORDER BY distinct_products DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["warehouse_name", "distinct_products"]},
+    "notes": "COUNT DISTINCT in GROUP BY"
+  },
+  {
+    "id": "Q024",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "Which supplier has the highest average rating among those who have delivered orders in 2024?",
+    "verified_sql": "SELECT s.supplier_name, ROUND(AVG(s.rating), 2) AS avg_rating FROM suppliers s JOIN purchase_orders po ON s.supplier_id = po.supplier_id WHERE po.status = 'delivered' AND EXTRACT(YEAR FROM po.actual_delivery) = 2024 GROUP BY s.supplier_id, s.supplier_name ORDER BY avg_rating DESC LIMIT 1",
+    "expected_result_shape": {"type": "single_row", "columns": ["supplier_name", "avg_rating"]},
+    "notes": "Multi-table with date filter and aggregation"
+  },
+  {
+    "id": "Q025",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "List all carriers used for shipping and how many shipments each has handled.",
+    "verified_sql": "SELECT carrier, COUNT(*) AS shipment_count FROM shipments GROUP BY carrier ORDER BY shipment_count DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["carrier", "shipment_count"]},
+    "notes": "GROUP BY on shipments table"
+  },
+  {
+    "id": "Q026",
+    "category": "multi_table_join",
+    "difficulty": "medium",
+    "question": "Which warehouse has the highest total inventory value?",
+    "verified_sql": "SELECT w.warehouse_name, ROUND(SUM(i.quantity_on_hand * p.unit_cost), 2) AS inventory_value FROM warehouses w JOIN inventory i ON w.warehouse_id = i.warehouse_id JOIN products p ON i.product_id = p.product_id GROUP BY w.warehouse_id, w.warehouse_name ORDER BY inventory_value DESC LIMIT 1",
+    "expected_result_shape": {"type": "single_row", "columns": ["warehouse_name", "inventory_value"]},
+    "notes": "Three-table join with multiplication in aggregation"
+  },
+  {
+    "id": "Q027",
+    "category": "group_by_having",
+    "difficulty": "medium",
+    "question": "Which suppliers have placed more than 30 purchase orders?",
+    "verified_sql": "SELECT s.supplier_name, COUNT(po.po_id) AS order_count FROM suppliers s JOIN purchase_orders po ON s.supplier_id = po.supplier_id GROUP BY s.supplier_id, s.supplier_name HAVING COUNT(po.po_id) > 30 ORDER BY order_count DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name", "order_count"]},
+    "notes": "HAVING filter on COUNT"
+  },
+  {
+    "id": "Q028",
+    "category": "group_by_having",
+    "difficulty": "medium",
+    "question": "Which product categories have an average unit cost above $500?",
+    "verified_sql": "SELECT category, ROUND(AVG(unit_cost), 2) AS avg_cost FROM products WHERE is_discontinued = FALSE GROUP BY category HAVING AVG(unit_cost) > 500 ORDER BY avg_cost DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["category", "avg_cost"]},
+    "notes": "HAVING with AVG threshold"
+  },
+  {
+    "id": "Q029",
+    "category": "group_by_having",
+    "difficulty": "medium",
+    "question": "Which suppliers have a cancellation rate above 20%?",
+    "verified_sql": "SELECT s.supplier_name, ROUND(100.0 * SUM(CASE WHEN po.status = 'cancelled' THEN 1 ELSE 0 END) / COUNT(*), 2) AS cancellation_rate FROM suppliers s JOIN purchase_orders po ON s.supplier_id = po.supplier_id GROUP BY s.supplier_id, s.supplier_name HAVING 100.0 * SUM(CASE WHEN po.status = 'cancelled' THEN 1 ELSE 0 END) / COUNT(*) > 20 ORDER BY cancellation_rate DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name", "cancellation_rate"]},
+    "notes": "HAVING with computed ratio using CASE"
+  },
+  {
+    "id": "Q030",
+    "category": "group_by_having",
+    "difficulty": "medium",
+    "question": "Which warehouses have inventory for more than 50 distinct products?",
+    "verified_sql": "SELECT w.warehouse_name, COUNT(DISTINCT i.product_id) AS product_count FROM warehouses w JOIN inventory i ON w.warehouse_id = i.warehouse_id GROUP BY w.warehouse_id, w.warehouse_name HAVING COUNT(DISTINCT i.product_id) > 50 ORDER BY product_count DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["warehouse_name", "product_count"]},
+    "notes": "HAVING with COUNT DISTINCT"
+  },
+  {
+    "id": "Q031",
+    "category": "group_by_having",
+    "difficulty": "medium",
+    "question": "Which months in 2024 had more than 100 purchase orders placed?",
+    "verified_sql": "SELECT TO_CHAR(order_date, 'YYYY-MM') AS month, COUNT(*) AS order_count FROM purchase_orders WHERE EXTRACT(YEAR FROM order_date) = 2024 GROUP BY month HAVING COUNT(*) > 100 ORDER BY month",
+    "expected_result_shape": {"type": "multi_row", "columns": ["month", "order_count"]},
+    "notes": "Date truncation + HAVING on monthly counts"
+  },
+  {
+    "id": "Q032",
+    "category": "group_by_having",
+    "difficulty": "medium",
+    "question": "Which product categories have more than 20 active SKUs?",
+    "verified_sql": "SELECT category, COUNT(*) AS sku_count FROM products WHERE is_discontinued = FALSE GROUP BY category HAVING COUNT(*) > 20 ORDER BY sku_count DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["category", "sku_count"]},
+    "notes": "Simple GROUP BY + HAVING on products"
+  },
+  {
+    "id": "Q033",
+    "category": "subquery_cte",
+    "difficulty": "hard",
+    "question": "Find all products whose average inventory across all warehouses is below their reorder level.",
+    "verified_sql": "WITH avg_inv AS (SELECT product_id, AVG(quantity_on_hand) AS avg_qty FROM inventory GROUP BY product_id) SELECT p.product_id, p.sku, p.product_name, p.reorder_level, ROUND(ai.avg_qty, 0) AS avg_inventory FROM products p JOIN avg_inv ai ON p.product_id = ai.product_id WHERE ai.avg_qty < p.reorder_level ORDER BY (p.reorder_level - ai.avg_qty) DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["sku", "product_name", "reorder_level", "avg_inventory"]},
+    "notes": "CTE for avg inventory then compare with reorder level"
+  },
+  {
+    "id": "Q034",
+    "category": "subquery_cte",
+    "difficulty": "hard",
+    "question": "Which suppliers are in the top 10 by total order value but have a rating below 3.5?",
+    "verified_sql": "WITH supplier_value AS (SELECT supplier_id, SUM(quantity_ordered * unit_price) AS total_value FROM purchase_orders GROUP BY supplier_id ORDER BY total_value DESC LIMIT 10) SELECT s.supplier_name, s.rating, sv.total_value FROM suppliers s JOIN supplier_value sv ON s.supplier_id = sv.supplier_id WHERE s.rating < 3.5 ORDER BY sv.total_value DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name", "rating", "total_value"]},
+    "notes": "CTE with LIMIT then filter join"
+  },
+  {
+    "id": "Q035",
+    "category": "subquery_cte",
+    "difficulty": "hard",
+    "question": "For each warehouse, what percentage of its products are below reorder level?",
+    "verified_sql": "WITH inv_status AS (SELECT i.warehouse_id, COUNT(*) AS total_products, SUM(CASE WHEN i.quantity_on_hand < p.reorder_level THEN 1 ELSE 0 END) AS below_reorder FROM inventory i JOIN products p ON i.product_id = p.product_id GROUP BY i.warehouse_id) SELECT w.warehouse_name, is_.total_products, is_.below_reorder, ROUND(100.0 * is_.below_reorder / NULLIF(is_.total_products, 0), 2) AS pct_below_reorder FROM warehouses w JOIN inv_status is_ ON w.warehouse_id = is_.warehouse_id ORDER BY pct_below_reorder DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["warehouse_name", "pct_below_reorder"]},
+    "notes": "CTE with NULLIF to avoid division by zero"
+  },
+  {
+    "id": "Q036",
+    "category": "subquery_cte",
+    "difficulty": "hard",
+    "question": "Find the second most expensive product in each category.",
+    "verified_sql": "WITH ranked AS (SELECT product_id, sku, product_name, category, unit_cost, RANK() OVER (PARTITION BY category ORDER BY unit_cost DESC) AS rnk FROM products WHERE is_discontinued = FALSE) SELECT category, product_name, sku, unit_cost FROM ranked WHERE rnk = 2 ORDER BY category",
+    "expected_result_shape": {"type": "multi_row", "columns": ["category", "product_name", "unit_cost"]},
+    "notes": "Window function with RANK"
+  },
+  {
+    "id": "Q037",
+    "category": "subquery_cte",
+    "difficulty": "hard",
+    "question": "Which suppliers have delivered orders to every warehouse?",
+    "verified_sql": "SELECT s.supplier_name FROM suppliers s WHERE NOT EXISTS (SELECT w.warehouse_id FROM warehouses w WHERE NOT EXISTS (SELECT 1 FROM purchase_orders po WHERE po.supplier_id = s.supplier_id AND po.warehouse_id = w.warehouse_id AND po.status = 'delivered'))",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name"]},
+    "notes": "Double NOT EXISTS (relational division)"
+  },
+  {
+    "id": "Q038",
+    "category": "subquery_cte",
+    "difficulty": "hard",
+    "question": "What is the running total of purchase order value by month in 2024?",
+    "verified_sql": "WITH monthly AS (SELECT DATE_TRUNC('month', order_date) AS month, SUM(quantity_ordered * unit_price) AS monthly_value FROM purchase_orders WHERE EXTRACT(YEAR FROM order_date) = 2024 GROUP BY 1) SELECT month, monthly_value, SUM(monthly_value) OVER (ORDER BY month) AS running_total FROM monthly ORDER BY month",
+    "expected_result_shape": {"type": "multi_row", "columns": ["month", "monthly_value", "running_total"]},
+    "notes": "CTE + window function for running total"
+  },
+  {
+    "id": "Q039",
+    "category": "date_time",
+    "difficulty": "medium",
+    "question": "Which purchase orders were delivered more than 14 days late?",
+    "verified_sql": "SELECT po_id, supplier_id, order_date, expected_delivery, actual_delivery, (actual_delivery - expected_delivery) AS delay_days FROM purchase_orders WHERE status = 'delivered' AND actual_delivery > expected_delivery + INTERVAL '14 days' ORDER BY delay_days DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["po_id", "delay_days"]},
+    "notes": "Date arithmetic with INTERVAL"
+  },
+  {
+    "id": "Q040",
+    "category": "date_time",
+    "difficulty": "medium",
+    "question": "What is the average delivery delay in days for each supplier?",
+    "verified_sql": "SELECT s.supplier_name, ROUND(AVG(po.actual_delivery - po.expected_delivery), 1) AS avg_delay_days FROM suppliers s JOIN purchase_orders po ON s.supplier_id = po.supplier_id WHERE po.status = 'delivered' AND po.actual_delivery IS NOT NULL GROUP BY s.supplier_id, s.supplier_name ORDER BY avg_delay_days DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name", "avg_delay_days"]},
+    "notes": "Date subtraction averaged by supplier"
+  },
+  {
+    "id": "Q041",
+    "category": "date_time",
+    "difficulty": "medium",
+    "question": "How many purchase orders were placed in Q1 2024 (January through March)?",
+    "verified_sql": "SELECT COUNT(*) AS q1_2024_orders FROM purchase_orders WHERE order_date >= '2024-01-01' AND order_date < '2024-04-01'",
+    "expected_result_shape": {"type": "single_value", "column": "q1_2024_orders"},
+    "notes": "Date range filter"
+  },
+  {
+    "id": "Q042",
+    "category": "date_time",
+    "difficulty": "medium",
+    "question": "Which suppliers have had a late delivery in the last 12 months?",
+    "verified_sql": "SELECT DISTINCT s.supplier_name FROM suppliers s JOIN purchase_orders po ON s.supplier_id = po.supplier_id WHERE po.status = 'delivered' AND po.actual_delivery > po.expected_delivery AND po.actual_delivery >= CURRENT_DATE - INTERVAL '12 months' ORDER BY s.supplier_name",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name"]},
+    "notes": "Relative date range using CURRENT_DATE"
+  },
+  {
+    "id": "Q043",
+    "category": "date_time",
+    "difficulty": "medium",
+    "question": "What is the average time in days between order placement and actual delivery for delivered orders?",
+    "verified_sql": "SELECT ROUND(AVG(actual_delivery - order_date), 1) AS avg_fulfillment_days FROM purchase_orders WHERE status = 'delivered' AND actual_delivery IS NOT NULL",
+    "expected_result_shape": {"type": "single_value", "column": "avg_fulfillment_days"},
+    "notes": "Average of date differences"
+  },
+  {
+    "id": "Q044",
+    "category": "ranking_topn",
+    "difficulty": "medium",
+    "question": "Who are the top 5 suppliers by total quantity ordered?",
+    "verified_sql": "SELECT s.supplier_name, SUM(po.quantity_ordered) AS total_qty FROM suppliers s JOIN purchase_orders po ON s.supplier_id = po.supplier_id GROUP BY s.supplier_id, s.supplier_name ORDER BY total_qty DESC LIMIT 5",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name", "total_qty"]},
+    "notes": "TOP-5 with ORDER BY + LIMIT"
+  },
+  {
+    "id": "Q045",
+    "category": "ranking_topn",
+    "difficulty": "medium",
+    "question": "What are the 3 most expensive products currently in stock?",
+    "verified_sql": "SELECT p.sku, p.product_name, p.unit_cost FROM products p JOIN inventory i ON p.product_id = i.product_id WHERE i.quantity_on_hand > 0 AND p.is_discontinued = FALSE GROUP BY p.product_id, p.sku, p.product_name, p.unit_cost ORDER BY p.unit_cost DESC LIMIT 3",
+    "expected_result_shape": {"type": "multi_row", "columns": ["sku", "product_name", "unit_cost"]},
+    "notes": "TOP-3 with join and active stock filter"
+  },
+  {
+    "id": "Q046",
+    "category": "ranking_topn",
+    "difficulty": "medium",
+    "question": "Which 5 products have the lowest inventory quantity on hand across all warehouses?",
+    "verified_sql": "SELECT p.sku, p.product_name, SUM(i.quantity_on_hand) AS total_qty FROM products p JOIN inventory i ON p.product_id = i.product_id GROUP BY p.product_id, p.sku, p.product_name ORDER BY total_qty ASC LIMIT 5",
+    "expected_result_shape": {"type": "multi_row", "columns": ["sku", "total_qty"]},
+    "notes": "Bottom-5 ranking"
+  },
+  {
+    "id": "Q047",
+    "category": "ranking_topn",
+    "difficulty": "medium",
+    "question": "Which carrier has the fastest average delivery time?",
+    "verified_sql": "SELECT carrier, ROUND(AVG(EXTRACT(EPOCH FROM (delivered_at - shipped_at)) / 86400), 1) AS avg_days FROM shipments WHERE shipped_at IS NOT NULL AND delivered_at IS NOT NULL GROUP BY carrier ORDER BY avg_days ASC LIMIT 1",
+    "expected_result_shape": {"type": "single_row", "columns": ["carrier", "avg_days"]},
+    "notes": "EPOCH extraction for timestamp difference"
+  },
+  {
+    "id": "Q048",
+    "category": "ambiguous",
+    "difficulty": "medium",
+    "question": "Which supplier is the best?",
+    "verified_sql": "SELECT supplier_name, rating FROM suppliers WHERE is_active = TRUE ORDER BY rating DESC LIMIT 5",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name", "rating"]},
+    "notes": "Ambiguous: 'best' interpreted as highest rating. Should flag ambiguity."
+  },
+  {
+    "id": "Q049",
+    "category": "ambiguous",
+    "difficulty": "medium",
+    "question": "Show me recent orders.",
+    "verified_sql": "SELECT po_id, order_date, status, quantity_ordered FROM purchase_orders WHERE order_date >= CURRENT_DATE - INTERVAL '30 days' ORDER BY order_date DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["po_id", "order_date"]},
+    "notes": "Ambiguous: 'recent' assumed to be last 30 days. Should flag ambiguity."
+  },
+  {
+    "id": "Q050",
+    "category": "ambiguous",
+    "difficulty": "medium",
+    "question": "Which products are running low?",
+    "verified_sql": "SELECT p.sku, p.product_name, p.reorder_level, SUM(i.quantity_on_hand) AS total_qty FROM products p JOIN inventory i ON p.product_id = i.product_id GROUP BY p.product_id, p.sku, p.product_name, p.reorder_level HAVING SUM(i.quantity_on_hand) < p.reorder_level ORDER BY (SUM(i.quantity_on_hand)::float / NULLIF(p.reorder_level, 0)) ASC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["sku", "product_name", "total_qty"]},
+    "notes": "Ambiguous: 'running low' interpreted as below reorder_level. Should flag ambiguity."
+  },
+  {
+    "id": "Q051",
+    "category": "ambiguous",
+    "difficulty": "hard",
+    "question": "Compare our Indian versus Chinese suppliers.",
+    "verified_sql": "SELECT country, COUNT(*) AS supplier_count, ROUND(AVG(rating), 2) AS avg_rating, SUM(CASE WHEN is_active THEN 1 ELSE 0 END) AS active_count FROM suppliers WHERE country IN ('India', 'China') GROUP BY country ORDER BY country",
+    "expected_result_shape": {"type": "multi_row", "columns": ["country", "supplier_count", "avg_rating"]},
+    "notes": "Ambiguous: 'compare' requires choosing metrics. Should flag ambiguity."
+  },
+  {
+    "id": "Q052",
+    "category": "ambiguous",
+    "difficulty": "hard",
+    "question": "What products should we reorder immediately?",
+    "verified_sql": "SELECT p.sku, p.product_name, p.reorder_level, SUM(i.quantity_on_hand) AS total_qty, (p.reorder_level - SUM(i.quantity_on_hand)) AS shortfall FROM products p JOIN inventory i ON p.product_id = i.product_id WHERE p.is_discontinued = FALSE GROUP BY p.product_id, p.sku, p.product_name, p.reorder_level HAVING SUM(i.quantity_on_hand) < p.reorder_level ORDER BY shortfall DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["sku", "shortfall"]},
+    "notes": "Ambiguous: 'immediately' interpreted as below reorder level. Ambiguity flag expected."
+  },
+  {
+    "id": "Q053",
+    "category": "ambiguous",
+    "difficulty": "medium",
+    "question": "How are our suppliers performing?",
+    "verified_sql": "SELECT s.supplier_name, s.rating, COUNT(po.po_id) AS total_orders, SUM(CASE WHEN po.status = 'delivered' THEN 1 ELSE 0 END) AS delivered, SUM(CASE WHEN po.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled, ROUND(AVG(CASE WHEN po.status = 'delivered' THEN po.actual_delivery - po.expected_delivery END), 1) AS avg_delay_days FROM suppliers s LEFT JOIN purchase_orders po ON s.supplier_id = po.supplier_id WHERE s.is_active = TRUE GROUP BY s.supplier_id, s.supplier_name, s.rating ORDER BY delivered DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["supplier_name", "total_orders", "avg_delay_days"]},
+    "notes": "Very broad question — many valid interpretations. Ambiguity flag strongly expected."
+  },
+  {
+    "id": "Q054",
+    "category": "ambiguous",
+    "difficulty": "medium",
+    "question": "Give me a summary of our inventory.",
+    "verified_sql": "SELECT w.warehouse_name, COUNT(DISTINCT i.product_id) AS distinct_products, SUM(i.quantity_on_hand) AS total_units, ROUND(SUM(i.quantity_on_hand * p.unit_cost), 2) AS total_value FROM warehouses w JOIN inventory i ON w.warehouse_id = i.warehouse_id JOIN products p ON i.product_id = p.product_id GROUP BY w.warehouse_id, w.warehouse_name ORDER BY total_value DESC",
+    "expected_result_shape": {"type": "multi_row", "columns": ["warehouse_name", "total_units", "total_value"]},
+    "notes": "Ambiguous: 'summary' requires interpretation. Ambiguity flag expected."
+  },
+  {
+    "id": "Q055",
+    "category": "unanswerable",
+    "difficulty": "hard",
+    "question": "What is the profit margin on each product?",
+    "verified_sql": null,
+    "expected_result_shape": {"type": "cannot_answer"},
+    "notes": "No selling price in schema — only unit_cost. cannot_answer must be True."
+  },
+  {
+    "id": "Q056",
+    "category": "unanswerable",
+    "difficulty": "hard",
+    "question": "Which supplier has the best customer satisfaction score?",
+    "verified_sql": null,
+    "expected_result_shape": {"type": "cannot_answer"},
+    "notes": "No customer satisfaction data in schema. cannot_answer must be True."
+  },
+  {
+    "id": "Q057",
+    "category": "unanswerable",
+    "difficulty": "hard",
+    "question": "What is the carbon footprint of our shipments?",
+    "verified_sql": null,
+    "expected_result_shape": {"type": "cannot_answer"},
+    "notes": "No emissions data in schema. cannot_answer must be True."
+  },
+  {
+    "id": "Q058",
+    "category": "unanswerable",
+    "difficulty": "hard",
+    "question": "Who is the account manager for our top supplier?",
+    "verified_sql": null,
+    "expected_result_shape": {"type": "cannot_answer"},
+    "notes": "No account manager or contact data in schema. cannot_answer must be True."
+  },
+  {
+    "id": "Q059",
+    "category": "unanswerable",
+    "difficulty": "hard",
+    "question": "What is the selling price of SKU-ABCD-1234?",
+    "verified_sql": null,
+    "expected_result_shape": {"type": "cannot_answer"},
+    "notes": "No selling price column — only unit_cost. cannot_answer must be True."
+  },
+  {
+    "id": "Q060",
+    "category": "unanswerable",
+    "difficulty": "hard",
+    "question": "Which employees approved the last purchase order?",
+    "verified_sql": null,
+    "expected_result_shape": {"type": "cannot_answer"},
+    "notes": "No employees table or approval workflow in schema. cannot_answer must be True."
+  }
+]
