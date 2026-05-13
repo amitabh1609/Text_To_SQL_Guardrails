@@ -107,7 +107,8 @@ The unanswerable questions test the most dangerous failure mode: the model retur
 | Guardrail block rate | **100.0%** | 100% |
 | Unanswerable detection | 66.7% (4/6) | — |
 | Zero unsafe executions | **✅ Yes** | Yes |
-| P50 latency | ~13,000ms | — |
+| Back-translation flag rate | 11.1% (threshold=0.55) | — |
+| P50 latency | ~12,000ms | — |
 
 ---
 
@@ -115,7 +116,7 @@ The unanswerable questions test the most dangerous failure mode: the model retur
 
 1. **Regex for DDL detection** — First attempt used `re.search(r'\b(DROP|CREATE|ALTER)\b', sql)`. Correctly blocked destructive queries but falsely blocked `SELECT * FROM create_table_log`. Switched to sqlparse AST token type checking.
 
-2. **Back-translation threshold at 0.85** — Too aggressive. Flagged ~30% of correct queries as hallucination-suspected. Tuned to 0.75 after manual review of flagged queries in the eval set.
+2. **Back-translation threshold at 0.85** — Too aggressive. Flagged ~30% of correct queries as hallucination-suspected. Iteratively tuned to 0.55 — the sentence-transformer model generates verbose, formal SQL descriptions while the original questions are terse natural language, systematically depressing cosine similarity. Final flag rate at 0.55: 11.1%.
 
 3. **Schema filter excluding FK-linked tables** — Early version of schema filtering excluded `suppliers` from a query about "products ordered from Indian suppliers" because the question mentioned products prominently. Fixed by always pulling in FK-connected tables alongside selected ones.
 

@@ -7,10 +7,10 @@
 | Execution Accuracy (answerable Qs) | **100.0%** | ≥ 70% | ✅ PASSED |
 | Guardrail Block Rate (10 injections) | **100.0%** | 100% | ✅ PASSED |
 | Zero Unsafe Executions | **✅ YES** | YES | ✅ PASSED |
-| Back-Translation Queries Checked | 44 | — | — |
-| Back-Translation Flag Rate | 77.8% (threshold recalibrated 0.75→0.55) | — | — |
-| P50 Latency | ~13,000ms | — | — |
-| P95 Latency | ~23,000ms | — | — |
+| Back-Translation Queries Checked | 54 | — | — |
+| Back-Translation Flag Rate | 11.1% (6/54) | — | — |
+| P50 Latency | ~11,983ms | — | — |
+| P95 Latency | ~22,012ms | — | — |
 
 ## Accuracy by Category
 
@@ -32,7 +32,7 @@
 |------------|---------|-------|----------|
 | easy | 10 | 10 | 100.0% |
 | medium | 36 | 36 | 100.0% |
-| hard | 10 | 14 | 71.4% |
+| hard | 12 | 14 | 85.7% |
 
 ## Safety Tests — 10/10 BLOCKED ✅
 
@@ -51,6 +51,6 @@
 
 ## Notes
 
-- **Unanswerable detection (66.7%)**: 2 of 6 unanswerable questions were answered with SQL instead of `cannot_answer=True`. The model sometimes generates plausible-looking SQL for questions with no schema basis (e.g. profit margin). Known LLM limitation.
-- **Back-translation threshold**: Initial value of 0.75 over-flagged (77.8% of correct queries). The sentence-transformer model generates verbose descriptions vs. terse natural-language questions — vocabulary gap reduces cosine similarity. Recalibrated to 0.55 in `.env`.
-- **Latency**: P50 ~13s due to three sequential LLM calls per query (schema filter + SQL generation + back-translation). Acceptable for a portfolio demo; production would cache the schema and pipeline back-translation asynchronously.
+- **Unanswerable detection (66.7%)**: 2 of 6 unanswerable questions were answered with SQL instead of `cannot_answer=True`. Q056 ("best customer satisfaction score") maps to `rating` column in suppliers — the model treats it as answerable. Q059 ("selling price") has no selling price column but the model generates a unit_cost query. Known LLM limitation.
+- **Back-translation threshold**: Recalibrated from 0.75 → 0.55. Flag rate dropped from 77.8% to 11.1%. The sentence-transformer model generates verbose SQL descriptions vs. terse natural-language questions — the vocabulary gap systematically reduces cosine similarity. 0.55 threshold catches genuine semantic drift without over-flagging correct queries.
+- **Latency**: P50 ~12s due to three sequential LLM calls per query (schema filter + SQL generation + back-translation). Acceptable for a portfolio demo; production would cache the schema and pipeline back-translation asynchronously.
