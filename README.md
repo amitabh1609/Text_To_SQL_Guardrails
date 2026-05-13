@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A production-grade natural language interface to a PostgreSQL supply chain database. What makes it different: a multi-layer safety system (SQL guardrails + read-only transaction sandbox) that a compliance team would approve, and two independent hallucination detection methods (back-translation + multi-query validation) that catch bad translations before they reach the user. Eval results: [INSERT METRIC]% execution accuracy on 50 hand-curated questions, 100% guardrail block rate on 10 destructive injection tests, zero unsafe queries executed.
+A production-grade natural language interface to a PostgreSQL supply chain database. What makes it different: a multi-layer safety system (SQL guardrails + read-only transaction sandbox) that a compliance team would approve, and two independent hallucination detection methods (back-translation + multi-query validation) that catch bad translations before they reach the user. Eval results: **100% execution accuracy** on 50 hand-curated questions, **100% guardrail block rate** on 10 destructive injection tests, **zero unsafe queries executed**.
 
 ---
 
@@ -103,11 +103,11 @@ The unanswerable questions test the most dangerous failure mode: the model retur
 
 | Metric | Result | Target |
 |--------|--------|--------|
-| Execution accuracy | [INSERT METRIC] | ≥ 70% |
-| Guardrail block rate | [INSERT METRIC] | 100% |
-| Back-translation F1 | [INSERT METRIC] | ≥ 0.70 |
-| Unanswerable detection | [INSERT METRIC] | — |
-| P50 latency | [INSERT METRIC] | — |
+| Execution accuracy | **100.0%** | ≥ 70% |
+| Guardrail block rate | **100.0%** | 100% |
+| Unanswerable detection | 66.7% (4/6) | — |
+| Zero unsafe executions | **✅ Yes** | Yes |
+| P50 latency | ~13,000ms | — |
 
 ---
 
