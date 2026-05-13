@@ -12,7 +12,7 @@ class AppConfig(BaseSettings):
     max_rows: int = Field(1000, alias="MAX_ROWS")
     back_translation_threshold: float = Field(0.75, alias="BACK_TRANSLATION_THRESHOLD")
     multi_query_enabled: bool = Field(True, alias="MULTI_QUERY_ENABLED")
-    llm_model: str = Field("claude-sonnet-4-20250514", alias="LLM_MODEL")
+    llm_model: str = Field("claude-sonnet-4-6", alias="LLM_MODEL")
 
 
 def get_config() -> AppConfig:
