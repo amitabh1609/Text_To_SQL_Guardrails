@@ -97,15 +97,25 @@ class TestDangerousFunctions:
 
 
 class TestCommentInjection:
-    def test_inline_comment(self):
-        r = check("SELECT * FROM suppliers -- DROP TABLE suppliers")
-        assert r.blocked
+    def test_inline_comment_stripped_not_blocked(self):
+        """Benign inline comments are stripped, not hard-blocked."""
+        r = check("SELECT * FROM suppliers -- just a comment")
+        assert not r.blocked
+        assert ViolationType.COMMENT_INJECTION in r.violations
+        assert r.sanitised_sql is not None
+        assert "--" not in (r.sanitised_sql or "")
+
+    def test_block_comment_stripped_not_blocked(self):
+        """Benign block comments are stripped, not hard-blocked."""
+        r = check("SELECT * FROM suppliers /* get all */ WHERE is_active = TRUE")
+        assert not r.blocked
         assert ViolationType.COMMENT_INJECTION in r.violations
 
-    def test_block_comment(self):
-        r = check("SELECT * FROM suppliers /* injected */")
+    def test_comment_after_semicolon_blocked(self):
+        """Comment immediately after a semicolon masks injection — hard block."""
+        r = check("SELECT * FROM suppliers; -- DROP TABLE suppliers")
         assert r.blocked
-        assert ViolationType.COMMENT_INJECTION in r.violations
+        assert ViolationType.MULTIPLE_STATEMENTS in r.violations or ViolationType.COMMENT_INJECTION in r.violations
 
 
 # ---------------------------------------------------------------------------

@@ -64,10 +64,18 @@ def check(sql: str) -> GuardrailResult:
     stmt = statements[0]
 
     # --- Comment injection ---
+    # Strip benign comments first; only hard-block if comments appear to mask injection
+    # (i.e., comment follows a semicolon, which is the classic injection pattern).
     if _has_comment_injection(sanitised_sql):
-        violations.append(ViolationType.COMMENT_INJECTION)
-        details.append("SQL comments detected (-- or /* */). Comments are not permitted.")
-        blocked = True
+        if _comment_masks_injection(sanitised_sql):
+            violations.append(ViolationType.COMMENT_INJECTION)
+            details.append("SQL comment following statement terminator detected — possible injection.")
+            blocked = True
+        else:
+            # Strip comments and continue — LLM-generated SQL may include harmless comments
+            sanitised_sql = _strip_comments(sanitised_sql)
+            violations.append(ViolationType.COMMENT_INJECTION)
+            details.append("SQL comments stripped from LLM-generated query.")
 
     # --- DDL check ---
     if _is_ddl(stmt):
@@ -117,7 +125,10 @@ def check(sql: str) -> GuardrailResult:
         # Not blocked — soft warning
 
     # --- Unbounded scan (soft fix: inject LIMIT) ---
-    if not blocked and not _has_limit(stmt):
+    # Re-parse after comment stripping so _has_limit sees the clean SQL
+    clean_stmts = sqlparse.parse(sanitised_sql)
+    clean_stmt = clean_stmts[0] if clean_stmts else stmt
+    if not blocked and not _has_limit(clean_stmt) and not _limit_in_raw(sanitised_sql):
         sanitised_sql = _inject_limit(sanitised_sql, 1000)
         violations.append(ViolationType.UNBOUNDED_SCAN)
         details.append("No LIMIT clause found. LIMIT 1000 injected automatically.")
@@ -220,14 +231,31 @@ def _inject_limit(sql: str, limit: int) -> str:
 
 
 def _has_comment_injection(sql: str) -> bool:
-    # Check for inline comments (--) and block comments (/* */)
-    # Use sqlparse token types rather than raw string search
     parsed = sqlparse.parse(sql)
     for stmt in parsed:
         for token in stmt.flatten():
             if token.ttype in (T.Comment.Single, T.Comment.Multiline):
                 return True
     return False
+
+
+def _comment_masks_injection(sql: str) -> bool:
+    """Return True only when a comment appears to hide injected SQL after a semicolon."""
+    import re
+    # Pattern: semicolon (possible whitespace) then a comment — the classic injection vector
+    return bool(re.search(r";\s*(--|/\*)", sql))
+
+
+def _strip_comments(sql: str) -> str:
+    """Remove all comments from SQL using sqlparse's formatting."""
+    return sqlparse.format(sql, strip_comments=True).strip()
+
+
+def _limit_in_raw(sql: str) -> bool:
+    """Fallback: case-insensitive word-boundary check for LIMIT in the raw SQL string.
+    Guards against sqlparse token-type misclassification in complex CTEs."""
+    import re
+    return bool(re.search(r"\bLIMIT\b", sql, re.IGNORECASE))
 
 
 def _max_subquery_depth(stmt: sql_nodes.Statement, current: int = 0) -> int:

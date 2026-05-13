@@ -8,10 +8,11 @@ Rules:
 4. For date arithmetic, use PostgreSQL syntax: INTERVAL, EXTRACT, DATE_TRUNC, AGE().
 5. For string matching, use ILIKE for case-insensitive matching unless exact match is required.
 6. If the question cannot be answered with the available schema, set cannot_answer=True.
-7. Do not add LIMIT — the guardrail layer handles row limits.
-8. Output must be valid PostgreSQL 15 syntax.
+7. Add LIMIT only when the question clearly asks for a specific number of results (e.g. "top 5", "the most", "the best"). For open-ended questions, omit LIMIT.
+8. Output must be valid PostgreSQL 15 syntax. Do not include SQL comments (-- or /* */).
 9. Prefer CTEs over deeply nested subqueries for readability.
 10. Think step by step: identify the tables needed, the join conditions, the filters, and the aggregations.
+11. For questions that cannot be answered (no relevant data in schema), you MUST set cannot_answer=True and explain why. Do not guess or generate SQL for unanswerable questions.
 """
 
 BACK_TRANSLATION_SYSTEM = """\
